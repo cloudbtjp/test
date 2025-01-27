@@ -40,8 +40,8 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: update jiraSM ApiToken
-          run: |
-            az keyvault secret set \
-              --name test-githubAction \
-              --value "${{ inputs.JIRAUSER }}" \
-              --vault-name kv-work-githubAction
+        run: |
+          az keyvault secret set \
+            --name test-githubAction \
+            --value "${{ inputs.JIRAUSER }}" \
+            --vault-name kv-work-githubAction
