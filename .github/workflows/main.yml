@@ -2,15 +2,6 @@ name: "Updating jiraSM API Token saved to Azure KV"
 
 on:
   workflow_dispatch:
-    inputs:
-      ref_commit: 
-        type: string
-        default: ""
-      GITHUB_ENVIRONMENT_NAME:
-        required: true
-        type: choice
-        options:
-          - dev
       JIRAUSER:
         type: string
       # APITOKEN:
@@ -20,26 +11,14 @@ jobs:
   update-jiraSM-ApiToken-dev:
     runs-on: ubuntu-latest
     environment:
-      name: ${{ inputs.GITHUB_ENVIRONMENT_NAME }}
+      name: dev
     steps:
-      - name: Checkout source code 
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.ref_commit }}
-
       - name: Login to Azure
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Preparation
-        run: |
-          sudo az aks install-cli
-
-          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
-          sudo chmod a+x /usr/local/bin/yq
-          
-      - name: Update jiraSM ApiToken
+      - name: show jiraSM ApiToken
         run: |
           az keyvault secret show \
             --name test-githubAction \
@@ -49,3 +28,20 @@ jobs:
             --name test-githubAction \
             --value "${{ inputs.JIRAUSER }}" \
             --vault-name kv-work-githubAction
+  
+  update-jiraSM-ApiToken-prd:
+    runs-on: ubuntu-latest
+    environment:
+      name: prd
+    steps:
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: update jiraSM ApiToken
+          run: |
+            az keyvault secret set \
+              --name test-githubAction \
+              --value "${{ inputs.JIRAUSER }}" \
+              --vault-name kv-work-githubAction
