@@ -2,6 +2,7 @@ name: "Updating jiraSM API Token saved to Azure KV"
 
 on:
   workflow_dispatch:
+    inputs:
       JIRAUSER:
         type: string
       # APITOKEN:
