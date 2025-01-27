@@ -2,7 +2,7 @@
 #
 #1.需要一个具有 repo 和 workflow 权限的 Personal Access Token (PAT)
 #2.将 PAT 存储为 GitHub Secret，例如 GH_PAT。
-#
+
 #########################
 name: Update GitHub Secret
 
@@ -33,5 +33,5 @@ jobs:
 
       - name: Update GitHub Secret
         run: |
-          NEW_SECRET_VALUE="This is the new secret value"
-          gh secret set MY_SECRET --body="$NEW_SECRET_VALUE"
+          NEW_SECRET_VALUE="This is the new secret value lide"
+          gh secret set TESTGITHUBCLI --body="$NEW_SECRET_VALUE"
