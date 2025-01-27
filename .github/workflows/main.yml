@@ -31,10 +31,6 @@ jobs:
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-      
-      - name: Debug Azure Login
-        run: |
-          az account show
 
       - name: Preparation
         run: |
@@ -50,6 +46,6 @@ jobs:
             --vault-name kv-work-githubAction
 
           az keyvault secret set \
-            --vault-name kv-work-githubAction \  
-            --name test-githubAction \          
-            --value "${{ inputs.JIRAUSER }}"
+            --name test-githubAction \
+            --value "${{ inputs.JIRAUSER }}" \
+            --vault-name kv-work-githubAction
