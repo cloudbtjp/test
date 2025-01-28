@@ -33,7 +33,7 @@ jobs:
 
       - name: Update GitHub Secret
         run: |
-          for repo in 'cloudbtjp/test' 'cloudbtjp/yello'; do
+          for repo in 'cloudbtjp/test' 'cloudbtjp/yellow'; do
             echo "Updating secrets for $repo"
             gh secret set MY_SECRET --repo $repo --body="$repo"
           done
