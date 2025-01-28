@@ -33,5 +33,8 @@ jobs:
 
       - name: Update GitHub Secret
         run: |
-          NEW_SECRET_VALUE="This is the new secret value"
-          gh secret set MY_SECRET --body="$NEW_SECRET_VALUE"
+          for repo in 'cloudbtjp/test' 'cloudbtjp/yello'; do
+            echo "Updating secrets for $repo"
+            gh secret set MY_SECRET --repo $repo --body="$repo"
+          done
+          
