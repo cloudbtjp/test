@@ -1,0 +1,135 @@
+name: "[TEST]Updating jiraSM API Token saved to Azure KV"
+
+on:
+  workflow_dispatch:
+    inputs:
+      JIRAUSER:
+        type: string
+      APITOKEN:
+        type: string
+
+jobs:
+  update-jiraSM-ApiToken-gcssre-dev:
+    runs-on: ubuntu-latest
+    environment:
+      name: dev
+    steps:
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: show jiraSM ApiToken
+        run: |
+          az keyvault secret set \
+            --name test-jiraSM1 \
+            --value "${{ inputs.JIRAUSER }}" \
+            --vault-name kv-work-githubAction
+          
+          AUTH_STRING="${{ inputs.JIRAUSER }}:${{ inputs.APITOKEN }}"
+          BASE64_AUTH_STRING=$(echo -n "$AUTH_STRING" | base64 | tr -d '\n')
+          az keyvault secret set \
+            --name test-jiraSM64 \
+            --value "$BASE64_AUTH_STRING" \
+            --vault-name kv-work-githubAction
+          
+  update-jiraSM-ApiToken-gcssre-prd:
+    runs-on: ubuntu-latest
+    environment:
+      name: prd
+    steps:
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: update jiraSM ApiToken
+        run: |
+          AUTH_STRING="${{ inputs.JIRAUSER }}:${{ inputs.APITOKEN }}"
+          BASE64_AUTH_STRING=$(echo -n "$AUTH_STRING" | base64 | tr -d '\n')
+          az keyvault secret set \
+            --name test-jiraSM-prd64 \
+            --value "$BASE64_AUTH_STRING" \
+            --vault-name kv-work-githubAction
+
+  update-github-secret:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install GitHub CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gh
+
+      - name: Authenticate with GitHub CLI
+        run: |
+          echo "${{ secrets.GH_TOKEN }}" | gh auth login --with-token
+
+      - name: Update GitHub Secret
+        run: |
+          AUTH_STRING="${{ inputs.JIRAUSER }}:${{ inputs.APITOKEN }}"
+          BASE64_AUTH_STRING=$(echo -n "$AUTH_STRING" | base64 | tr -d '\n')
+          for repo in 'cloudbtjp/test'; do
+            echo "Updating secrets for $repo"
+            gh secret set TEST_JIRA_TOKEN --repo $repo --body="$BASE64_AUTH_STRING"
+          done
+
+  # delete-github-secret:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v3
+
+  #     - name: Install GitHub CLI
+  #       run: |
+  #         sudo apt-get update
+  #         sudo apt-get install -y gh
+
+  #     - name: Authenticate with GitHub CLI
+  #       run: |
+  #         echo "${{ secrets.GH_TOKEN }}" | gh auth login --with-token
+
+  #     - name: Delete GitHub Secret
+  #       run: |
+  #         for repo in 'SonySemiconductorSolutions/ss-core-ops' 'SonySemiconductorSolutions/ss-global-ops' 'SonySemiconductorSolutions/ss-gcs-microservice-template'; do
+  #           echo "Deleting secrets for $repo"
+  #           gh secret delete TEST_JIRA_TOKEN --repo $repo
+  #         done
+
+  # delete-jiraSM-ApiToken-gcssre-dev:
+  #   runs-on: ubuntu-latest
+  #   environment:
+  #     name: dev
+  #   steps:
+  #     - name: Login to Azure
+  #       uses: azure/login@v2
+  #       with:
+  #         creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+  #     - name: delete jiraSM ApiToken
+  #       run: |
+  #         az keyvault secret delete \
+  #           --name test-jiraSM \
+  #           --vault-name kv-work-githubAction
+          
+  #         az keyvault secret delete \
+  #           --name test-jiraSM \
+  #           --vault-name kv-gcssre-dev-jsmapitoke
+
+  # delete-jiraSM-ApiToken-gcssre-prd:
+  #   runs-on: ubuntu-latest
+  #   environment:
+  #     name: prd
+  #   steps:
+  #     - name: Login to Azure
+  #       uses: azure/login@v2
+  #       with:
+  #         creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+  #     - name: delete jiraSM ApiToken
+  #       run: |
+  #         az keyvault secret delete \
+  #           --name test-jiraSM \
+  #           --vault-name kv-gcssre-prd-jsmapitoke
