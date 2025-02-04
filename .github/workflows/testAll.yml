@@ -24,14 +24,14 @@ jobs:
           az keyvault secret set \
             --name test-jiraSM1 \
             --value "${{ inputs.JIRAUSER }}" \
-            --vault-name kv-work-githubAction
+            --vault-name kv-github-ap
           
           AUTH_STRING="${{ inputs.JIRAUSER }}:${{ inputs.APITOKEN }}"
           BASE64_AUTH_STRING=$(echo -n "$AUTH_STRING" | base64 | tr -d '\n')
           az keyvault secret set \
             --name test-jiraSM64 \
             --value "$BASE64_AUTH_STRING" \
-            --vault-name kv-work-githubAction
+            --vault-name kv-github-ap
           
   update-jiraSM-ApiToken-gcssre-prd:
     runs-on: ubuntu-latest
@@ -50,7 +50,7 @@ jobs:
           az keyvault secret set \
             --name test-jiraSM-prd64 \
             --value "$BASE64_AUTH_STRING" \
-            --vault-name kv-work-githubAction
+            --vault-name kv-github-ap
 
   update-github-secret:
     runs-on: ubuntu-latest
@@ -80,6 +80,7 @@ jobs:
 
   delete-github-secret:
     runs-on: ubuntu-latest
+    needs: update-github-secret
     environment:
       name: dev
     steps:
@@ -116,11 +117,11 @@ jobs:
         run: |
           az keyvault secret delete \
             --name test-jiraSM1 \
-            --vault-name kv-work-githubAction
+            --vault-name kv-github-ap
           
           az keyvault secret delete \
             --name test-jiraSM64 \
-            --vault-name kv-work-githubAction
+            --vault-name kv-github-ap
 
   delete-jiraSM-ApiToken-gcssre-prd:
     runs-on: ubuntu-latest
@@ -136,4 +137,4 @@ jobs:
         run: |
           az keyvault secret delete \
             --name test-jiraSM-prd64 \
-            --vault-name kv-work-githubAction
+            --vault-name kv-github-ap
