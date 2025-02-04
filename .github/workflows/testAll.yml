@@ -95,7 +95,7 @@ jobs:
 
       - name: Delete GitHub Secret
         run: |
-          for repo in 'SonySemiconductorSolutions/ss-core-ops' 'SonySemiconductorSolutions/ss-global-ops' 'SonySemiconductorSolutions/ss-gcs-microservice-template'; do
+          for repo in 'cloudbtjp/test'; do
             echo "Deleting secrets for $repo"
             gh secret delete TEST_JIRA_TOKEN --repo $repo
           done
@@ -113,12 +113,12 @@ jobs:
       - name: delete jiraSM ApiToken
         run: |
           az keyvault secret delete \
-            --name test-jiraSM \
+            --name test-jiraSM1 \
             --vault-name kv-work-githubAction
           
           az keyvault secret delete \
-            --name test-jiraSM \
-            --vault-name kv-gcssre-dev-jsmapitoke
+            --name test-jiraSM64 \
+            --vault-name kv-work-githubAction
 
   delete-jiraSM-ApiToken-gcssre-prd:
     runs-on: ubuntu-latest
@@ -133,5 +133,5 @@ jobs:
       - name: delete jiraSM ApiToken
         run: |
           az keyvault secret delete \
-            --name test-jiraSM \
-            --vault-name kv-gcssre-prd-jsmapitoke
+            --name test-jiraSM-prd64 \
+            --vault-name kv-work-githubAction
