@@ -11,6 +11,8 @@ on:
 jobs:
   delete-github-secret:
       runs-on: ubuntu-latest
+      environment:
+        name: dev
       steps:
         - name: Checkout repository
           uses: actions/checkout@v3
@@ -26,7 +28,7 @@ jobs:
 
         - name: Delete GitHub Secret
           run: |
-            gh secret delete TESTGITHUBCLI
+            gh secret delete MY_SECRET --repo="cloudbtjp/test"
 
   delete-jiraSM-ApiToken-gcssre-dev:
     runs-on: ubuntu-latest
