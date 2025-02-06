@@ -1,9 +1,3 @@
-#########################
-#
-#1.需要一个具有 repo 和 workflow 权限的 Personal Access Token (PAT)
-#2.将 PAT 存储为 GitHub Secret，例如 GH_PAT。
-#
-#########################
 name: Update GitHub Secret
 
 on:
@@ -22,19 +16,56 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install GitHub CLI
+      - name: Install GitHub CLI and dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y gh
+          sudo apt-get install -y gh openssl jq
 
-      - name: Authenticate with GitHub CLI
+      - name: Generate JWT and Authenticate with GitHub CLI
         run: |
-          echo "${{ secrets.GH_PAT }}" | gh auth login --with-token
+          # 获取 secrets 中的 Client ID 和私钥
+          client_id="${{ secrets.APP_ID }}"
+          pem="${{ secrets.PRIVATE_KEY }}"
+
+          now=$(date +%s)
+          iat=$((${now} - 60)) # Issues 60 seconds in the past
+          exp=$((${now} + 600)) # Expires 10 minutes in the future
+
+          b64enc() { openssl base64 | tr -d '=' | tr '/+' '_-' | tr -d '\n'; }
+
+          header_json='{
+              "typ":"JWT",
+              "alg":"RS256"
+          }'
+          # Header encode
+          header=$( echo -n "${header_json}" | b64enc )
+
+          payload_json="{
+              \"iat\":${iat},
+              \"exp\":${exp},
+              \"iss\":\"${client_id}\"
+          }"
+          # Payload encode
+          payload=$( echo -n "${payload_json}" | b64enc )
+
+          # Signature
+          header_payload="${header}"."${payload}"
+          signature=$(
+              openssl dgst -sha256 -sign <(echo -n "${pem}") \
+              <(echo -n "${header_payload}") | b64enc
+          )
+
+          # Create JWT
+          JWT="${header_payload}"."${signature}"
+
+          # 使用 JWT 获取安装令牌
+          INSTALLATION_ID=$(curl -s -H "Authorization: Bearer $JWT" -H "Accept: application/vnd.github.v3+json" "https://api.github.com/app/installations" | jq '.[0].id')
+          INSTALLATION_TOKEN=$(curl -s -X POST -H "Authorization: Bearer $JWT" -H "Accept: application/vnd.github.v3+json" "https://api.github.com/app/installations/$INSTALLATION_ID/access_tokens" | jq -r '.token')
+
+          # 使用安装令牌进行认证
+          echo "$INSTALLATION_TOKEN" | gh auth login --with-token
 
       - name: Update GitHub Secret
         run: |
-          for repo in 'cloudbtjp/test' 'cloudbtjp/yellow'; do
-            echo "Updating secrets for $repo"
-            gh secret set MY_SECRET --repo $repo --body="$repo"
-          done
-          
+          NEW_SECRET_VALUE="This is the new secret value lide"
+          gh secret set TEST_GITAPP --body="$NEW_SECRET_VALUE"
