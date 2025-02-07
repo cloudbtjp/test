@@ -28,10 +28,9 @@ jobs:
 
       - name: Authenticate with GitHub CLI
         env:
-          GH_TOKEN: ${{ steps.generate_token.outputs.token }}
           ORG: cloudbtjp
         run: |
-          echo "$GH_TOKEN" | gh auth login --with-token
+          echo ${{ steps.generate_token.outputs.token }} | gh auth login --with-token
 
       - name: Update GitHub Secret
         run: |
