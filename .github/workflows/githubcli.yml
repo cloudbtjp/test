@@ -1,16 +1,8 @@
-#########################
-#
-#1.需要一个具有 repo 和 workflow admin:org(?)权限的 Personal Access Token (PAT)
-#2.将 PAT 存储为 GitHub Secret，例如 GH_PAT。
-
-#########################
 name: Update GitHub Secret
 
 on:
   workflow_dispatch: # 允许手动触发
-  # push:
-  #   branches:
-  #     - main # 在 main 分支推送时触发
+
 
 jobs:
   update-secret:
@@ -21,15 +13,25 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-
+        
       - name: Install GitHub CLI
         run: |
           sudo apt-get update
           sudo apt-get install -y gh
+          
+      - name: Generate token
+        id: generate_token
+        uses: tibdex/github-app-token@v2
+        with:
+          app_id: ${{ secrets.APP_ID }}
+          private_key: ${{ secrets.PRIVATE_KEY }}
 
       - name: Authenticate with GitHub CLI
+        env:
+          GH_TOKEN: ${{ steps.generate_token.outputs.token }}
+          ORG: cloudbtjp
         run: |
-          echo "${{ secrets.GH_PAT }}" | gh auth login --with-token
+          echo "$GH_TOKEN" | gh auth login --with-token
 
       - name: Update GitHub Secret
         run: |
