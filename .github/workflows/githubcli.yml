@@ -33,8 +33,6 @@ jobs:
           echo ${{ steps.generate_token.outputs.token }} | gh auth login --with-token
 
       - name: Update GitHub Secret
-        env:
-          ORG: cloudbtjp
         run: |
           NEW_SECRET_VALUE="This is the new secret value lide"
-          gh secret set TESTGITHUBCLI --body="NEW_SECRET_VALUE" --env=dev
+          gh secret set TESTGITHUBCLI --body="$NEW_SECRET_VALUE"
