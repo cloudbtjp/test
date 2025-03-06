@@ -1,0 +1,49 @@
+name: "monitoring DNS state and notify anomalies"
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 * * * *'
+
+
+jobs:
+  monitoring-DNS:
+    runs-on: ubuntu-22.04
+    environment:
+      name: dev
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: set up Go 1.18
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.18
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.10"
+
+      - name: install tools
+        run: |
+          go install github.com/tmccombs/hcl2json@latest
+          pip install dnspython
+          pip install slack_sdk
+
+      # - name: Detect anomalies and notify report if necessary
+      #   env:
+      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_SSAI_OPS_MONITORING_ALERT }}
+      #   shell: bash
+      #   run: |
+      #     SUBSCRIPTION="gcssre"
+      #     ENV_NAME="prd"
+      #     ZONE_NAME="aitrios.sony-semicon.com"
+      #     DNS_DEFINISION_JSON_PATH=$(mktemp)
+
+      #     # terraformのDNS構成fileをJSON形式に変換
+      #     DNS_DEFINISION_TFVARS_PATH="tools/terraform/tf/variables/${SUBSCRIPTION}${ENV_NAME}/dns_zone/${ZONE_NAME}.tfvars"
+      #     hcl2json ${DNS_DEFINISION_TFVARS_PATH} > ${DNS_DEFINISION_JSON_PATH}
+
+      #     # pythonにzone name、tfvarsの一時ファイルのパスを渡して、DNS正常性を確認する。
+      #     # 問題がある場合はSlackに通知されます。
+      #     python .github/scripts/notify_dns_anomalies_if_necessary.py ${ZONE_NAME} ${DNS_DEFINISION_JSON_PATH}
